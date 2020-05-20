@@ -1,6 +1,7 @@
 <?php namespace OFFLINE\SiteSearch\Components;
 
 use DomainException;
+use Event;
 use Illuminate\Pagination\LengthAwarePaginator;
 use OFFLINE\SiteSearch\Classes\ResultCollection;
 use OFFLINE\SiteSearch\Classes\SearchService;
@@ -166,7 +167,13 @@ class SearchResults extends BaseComponent
     {
         $search = new SearchService($this->query, $this->controller);
 
-        return $search->results();
+        $results = $search->results();
+
+        $modified = Event::fire('offline.sitesearch.results', $results);
+
+        return count($modified) > 0
+            ? $modified[0]
+            : $results->sortByDesc('relevance');
     }
 
     /**
@@ -183,7 +190,7 @@ class SearchResults extends BaseComponent
             $this->pageNumber
         );
 
-        $pageUrl = Url::to($this->controller->pageUrl($this->page->name));
+        $pageUrl = Url::to(Request::url());
 
         return $paginator->setPath($pageUrl)->appends('q', $this->query);
     }

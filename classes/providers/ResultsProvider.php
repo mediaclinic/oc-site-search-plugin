@@ -203,11 +203,26 @@ abstract class ResultsProvider
      * @param $ageInDays
      *
      * @return float
+     * @deprecated use static::agePenaltyForDays()
      */
     protected function getAgePenalty($ageInDays)
     {
-        $penalty = $ageInDays * 0.003;
+        return static::agePenaltyForDays($ageInDays);
+    }
 
-        return $penalty > .9 ? .9 : $penalty;
+    /**
+     * Give old results an age penalty to list them below newer results.
+     *
+     * @param $ageInDays
+     * @param $penaltyPerDay
+     * @param $maxPenalty
+     *
+     * @return float
+     */
+    public static function agePenaltyForDays($ageInDays, $penaltyPerDay = 0.003, $maxPenalty = .9)
+    {
+        $penalty = $ageInDays * $penaltyPerDay;
+
+        return $penalty > $maxPenalty ? $maxPenalty : $penalty;
     }
 }
